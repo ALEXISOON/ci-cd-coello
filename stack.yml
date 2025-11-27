@@ -5,7 +5,7 @@ networks:
     external: true
 
 services:
-  coello_app:
+  coello:
     image: ghcr.io/alexisoon/coello:1.0.5
     deploy:
       replicas: 1

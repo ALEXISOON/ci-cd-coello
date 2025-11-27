@@ -17,7 +17,7 @@ jobs:
         with:
           registry: ghcr.io
           username: "alexisoon"
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Copy docker-compose to VPS
         uses: appleboy/scp-action@v0.1.6
@@ -37,6 +37,7 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
-            docker login ghcr.io -u "alexisoon" -p "${{ secrets.GITHUB_TOKEN }}"
+            # Login con el token nuevo
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "alexisoon" --password-stdin
             docker pull ghcr.io/alexisoon/coello:1.0.5
             docker stack deploy --with-registry-auth -c /home/${{ secrets.VPS_USER }}/coello/docker-compose.yml coello

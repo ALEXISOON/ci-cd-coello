@@ -38,7 +38,7 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
             # Login en GHCR desde VPS usando tu PAT
-            echo "${{ secrets.COELLO_CD_TOKEN }}" | docker login ghcr.io -u "alexisoon" --password-stdin
+            echo "${{ secrets.coello_cd_token }}" | docker login ghcr.io -u "alexisoon" --password-stdin
             # Descargar la imagen
             docker pull ghcr.io/alexisoon/coello:1.0.5
             # Desplegar stack

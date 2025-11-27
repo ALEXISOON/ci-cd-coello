@@ -21,6 +21,9 @@ jobs:
         run: |
           pip install -r app/requirements.txt
 
+      - name: Add project to PYTHONPATH
+        run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)" >> $GITHUB_ENV
+
       - name: Run tests
         run: pytest -q
 

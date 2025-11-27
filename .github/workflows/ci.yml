@@ -41,8 +41,8 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ github.actor }}/coello:1.0.5 .
+          docker build -t ghcr.io/alexisoon/coello:1.0.5 .
 
       - name: Push image
         run: |
-          docker push ghcr.io/${{ github.actor }}/coello:1.0.5
+          docker push ghcr.io/alexisoon/coello:1.0.5

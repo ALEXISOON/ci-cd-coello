@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  coello_service:
+    image: ghcr.io/${GITHUB_OWNER}/coello:1.0.5
+    ports:
+      - "80:5000"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure

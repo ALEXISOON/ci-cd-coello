@@ -1,0 +1,50 @@
+name: CI - tests + build + publish
+
+on:
+  push:
+    branches:
+      - coello
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/coello:1.0.5
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r app/requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest -q
+
+  build_and_publish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        env:
+          CR_PAT: ${{ secrets.GHCR_PAT }}
+        run: echo "$CR_PAT" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+
+      - name: Build image
+        run: docker build -t $IMAGE_NAME .
+
+      - name: Push image
+        run: docker push $IMAGE_NAME

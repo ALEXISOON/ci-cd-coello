@@ -1,0 +1,42 @@
+name: CD - deploy to VPS
+
+on:
+  push:
+    branches:
+      - coello
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+  id-token: write
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/coello:1.0.5
+  STACK_NAME: exam_stack
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Upload stack to VPS
+        run: |
+          sed "s|\${GITHUB_OWNER}|${{ github.repository_owner }}|g" stack.yml > stack_rendered.yml
+          scp -o StrictHostKeyChecking=no stack_rendered.yml ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }}:/home/${{ secrets.SSH_USER }}/stack.yml
+
+      - name: Deploy on VPS
+        env:
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          echo "${GHCR_PAT}" | docker login ghcr.io -u "${GITHUB_OWNER}" --password-stdin
+          docker stack deploy -c /home/${{ secrets.SSH_USER }}/stack.yml exam_stack
+          EOF

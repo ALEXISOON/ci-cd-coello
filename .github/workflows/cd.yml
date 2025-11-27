@@ -12,7 +12,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Login en GHCR para permitir docker pull desde el VPS
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -20,7 +19,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Copiar docker-compose al VPS
       - name: Copy docker-compose to VPS
         uses: appleboy/scp-action@v0.1.6
         with:
@@ -31,7 +29,6 @@ jobs:
           source: "docker-compose.yml"
           target: "/home/${{ secrets.VPS_USER }}/coello/"
 
-      # Desplegar stack en el VPS
       - name: Deploy stack
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -40,6 +37,6 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
-            docker login ghcr.io -u "${{ github.actor }}" -p "${{ secrets.GITHUB_TOKEN }}"
-            docker pull ghcr.io/${{ github.repository_owner }}/coello:1.0.5
+            docker login ghcr.io -u "alexisoon" -p "${{ secrets.GITHUB_TOKEN }}"
+            docker pull ghcr.io/alexisoon/coello:1.0.5
             docker stack deploy --with-registry-auth -c /home/${{ secrets.VPS_USER }}/coello/docker-compose.yml coello

@@ -29,7 +29,7 @@ jobs:
           source: "docker-compose.yml"
           target: "/home/${{ secrets.VPS_USER }}/coello/"
 
-      - name: Deploy stack
+      - name: Deploy stack on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -39,5 +39,7 @@ jobs:
           script: |
             # Login en GHCR desde VPS usando tu PAT
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "alexisoon" --password-stdin
+            # Descargar la imagen
             docker pull ghcr.io/alexisoon/coello:1.0.5
+            # Desplegar stack
             docker stack deploy --with-registry-auth -c /home/${{ secrets.VPS_USER }}/coello/docker-compose.yml coello

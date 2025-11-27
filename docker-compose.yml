@@ -1,5 +1,9 @@
 version: "3.9"
 
+networks:
+  web:
+    external: true  # Traefik ya tiene esta red overlay
+
 services:
   app:
     image: ghcr.io/alexisoon/coello:1.0.5
@@ -13,3 +17,5 @@ services:
         - "traefik.http.routers.coello.entrypoints=websecure"
         - "traefik.http.routers.coello.tls=true"
         - "traefik.http.services.coello.loadbalancer.server.port=5000"
+    networks:
+      - web

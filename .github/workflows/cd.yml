@@ -1,42 +1,45 @@
-name: CD - deploy to VPS
+name: CD - Deploy to VPS
 
 on:
   push:
-    branches:
-      - coello
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  packages: read
-  id-token: write
-
-env:
-  IMAGE: ghcr.io/${{ github.repository_owner }}/coello:1.0.5
-  STACK_NAME: exam_stack
+    branches: ["coello"]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Add SSH key
-        uses: webfactory/ssh-agent@v0.8.1
+      # Hacer login en GHCR para permitir docker pull en el VPS
+      - name: Login to GHCR
+        uses: docker/login-action@v2
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload stack to VPS
-        run: |
-          sed "s|\${GITHUB_OWNER}|${{ github.repository_owner }}|g" stack.yml > stack_rendered.yml
-          scp -o StrictHostKeyChecking=no stack_rendered.yml ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }}:/home/${{ secrets.SSH_USER }}/stack.yml
+      # Copiar docker-compose al servidor
+      - name: Copy docker-compose to VPS
+        uses: appleboy/scp-action@v0.1.6
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: "docker-compose.yml"
+          target: "/app/coello/"
 
-      - name: Deploy on VPS
-        env:
-          GHCR_PAT: ${{ secrets.GHCR_PAT }}
-          GITHUB_OWNER: ${{ github.repository_owner }}
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-          echo "${GHCR_PAT}" | docker login ghcr.io -u "${GITHUB_OWNER}" --password-stdin
-          docker stack deploy -c /home/${{ secrets.SSH_USER }}/stack.yml exam_stack
-          EOF
+      # Ejecutar el despliegue automático
+      - name: Deploy stack
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            docker login ghcr.io -u "${{ github.actor }}" -p "${{ secrets.GITHUB_TOKEN }}"
+            docker pull ghcr.io/${{ github.repository_owner }}/coello:1.0.5
+            docker stack deploy --with-registry-auth -c /app/coello/docker-compose.yml coello

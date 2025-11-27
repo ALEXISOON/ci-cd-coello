@@ -17,7 +17,7 @@ jobs:
         with:
           registry: ghcr.io
           username: "alexisoon"
-          password: ${{ secrets.COELLO_CD_TOKEN }}
+          password: ${{ secrets.GHCR_PAT }}
 
       - name: Copy docker-compose to VPS
         uses: appleboy/scp-action@v0.1.6
@@ -38,7 +38,7 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
             # Login en GHCR desde VPS usando tu PAT
-            echo "${{ secrets.coello_cd_token }}" | docker login ghcr.io -u "alexisoon" --password-stdin
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "alexisoon" --password-stdin
             # Descargar la imagen
             docker pull ghcr.io/alexisoon/coello:1.0.5
             # Desplegar stack

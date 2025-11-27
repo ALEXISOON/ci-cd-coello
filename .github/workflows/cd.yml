@@ -39,7 +39,17 @@ jobs:
           script: |
             # Login en GHCR desde VPS usando tu PAT
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "alexisoon" --password-stdin
-            # Descargar la imagen
+
+            # Asegurarse de que la imagen está disponible
             docker pull ghcr.io/alexisoon/coello:1.0.5
-            # Desplegar stack
+
+            # Eliminar stack anterior si existe
+            docker stack rm coello || true
+            sleep 5  # esperar a que Docker limpie los recursos
+
+            # Desplegar el stack con la nueva imagen
             docker stack deploy --with-registry-auth -c /home/${{ secrets.VPS_USER }}/coello/docker-compose.yml coello
+
+            # Verificar estado del servicio
+            docker service ls
+            docker service ps coello_app

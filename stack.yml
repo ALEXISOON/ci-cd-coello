@@ -2,10 +2,10 @@ version: "3.9"
 
 networks:
   web:
-    external: true  # red de Traefik
+    external: true  # red de Traefik, ya creada en tu VPS
 
 services:
-  coello_service:
+  coello:   # nombre del servicio debe coincidir con labels
     image: ghcr.io/alexisoon/coello:1.0.5
     deploy:
       replicas: 1

@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from ai_module import simple_ai_reply
+from app.ai_module import simple_ai_reply   # <- único cambio
 
 app = Flask(__name__)
 

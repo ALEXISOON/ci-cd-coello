@@ -2,7 +2,7 @@ version: "3.9"
 
 networks:
   web:
-    external: true  # Traefik ya tiene esta red overlay
+    external: true  # conecta con la red overlay de Traefik
 
 services:
   app:
